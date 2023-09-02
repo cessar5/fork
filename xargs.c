@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <unistd.h>
+#include <sys/wait.h>
 
 int
 main(int argc, char *argv[])
@@ -28,15 +29,18 @@ main(int argc, char *argv[])
 		// exit(EXIT_FAILURE);
 		stream = stdin;
 	}
-	char *command = "ls";
-	char *argument_list[] = { "ls", "-l", NULL };
+	char *command = argv[1];
+
 
 	while ((nread = getline(&line, &len, stream)) != -1) {
 		strtok(line, "\n");
 		printf("Retrieved line of length %zu:\n", nread);
 		printf("Retrieved line :%s \n", line);
 
-		if (fork() == 0) {
+		char *argument_list[] = { command, line, NULL };
+
+		int pid = fork();
+		if (pid == 0) {
 			int status_code = execvp(command, argument_list);
 			// si fue satisfactoria la ejuccion de execvp esto no se ejecuta.
 			if (status_code == -1) {
